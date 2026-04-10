@@ -256,7 +256,6 @@ export default function ProductPage() {
             currency: "MAD",
           };
 
-          (window as any).ttq.track("PlaceAnOrder", trackingData);
           (window as any).ttq.track("Purchase", trackingData);
         });
       }
