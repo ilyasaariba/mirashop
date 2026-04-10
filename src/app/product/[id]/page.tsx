@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -168,6 +168,22 @@ export default function ProductPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [formError, setFormError] = useState("");
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  const mobileFormRef = useRef<HTMLDivElement>(null);
+  const [isFormVisible, setIsFormVisible] = useState(false);
+
+  useEffect(() => {
+    const node = mobileFormRef.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        setIsFormVisible(entries[0].isIntersecting);
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [loading]);
 
   useEffect(() => {
     if (!id) return;
@@ -445,7 +461,7 @@ export default function ProductPage() {
             </div>
 
             {/* ── MOBILE ORDER FORM (below details) ── */}
-            <div id="order-form" className="lg:hidden">
+            <div id="order-form" ref={mobileFormRef} className="lg:hidden">
               <OrderForm
                 product={product}
                 fullName={fullName} setFullName={setFullName}
@@ -482,7 +498,7 @@ export default function ProductPage() {
       </main>
 
       {/* ══ MOBILE BOTTOM STICKY CTA ══════════════════════════ */}
-      <div className="lg:hidden fixed bottom-0 inset-x-0 z-50 p-3 bg-white/95 backdrop-blur-md border-t border-gray-100 shadow-[0_-4px_24px_rgba(0,0,0,0.08)]">
+      <div className={`lg:hidden fixed bottom-0 inset-x-0 z-50 p-3 bg-white/95 backdrop-blur-md border-t border-gray-100 shadow-[0_-4px_24px_rgba(0,0,0,0.08)] transition-transform duration-500 ease-in-out ${isFormVisible ? "translate-y-[120%]" : "translate-y-0"}`}>
         <div className="flex gap-3 items-center">
           {/* Price pill */}
           <div className="flex flex-col shrink-0">
