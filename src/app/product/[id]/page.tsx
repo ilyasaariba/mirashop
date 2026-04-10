@@ -211,6 +211,40 @@ export default function ProductPage() {
       });
       if (error) throw error;
       setIsSubmitted(true);
+
+      // TikTok Pixel Tracking
+      if (typeof window !== "undefined" && (window as any).ttq) {
+        // Hash phone number securely using Web Crypto API for TikTok matching
+        const hashPhone = async (phoneStr: string) => {
+          const msgUint8 = new TextEncoder().encode(phoneStr);
+          const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8);
+          const hashArray = Array.from(new Uint8Array(hashBuffer));
+          return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+        };
+
+        hashPhone(phone).then((hashedPhone) => {
+          (window as any).ttq.identify({
+            phone_number: hashedPhone,
+          });
+
+          const trackingData = {
+            contents: [
+              {
+                content_id: product.id,
+                content_type: "product",
+                content_name: product.title,
+                price: product.price,
+              },
+            ],
+            value: product.price * quantity,
+            currency: "MAD",
+          };
+
+          (window as any).ttq.track("PlaceAnOrder", trackingData);
+          (window as any).ttq.track("Purchase", trackingData);
+        });
+      }
+
       document.getElementById("order-form")?.scrollIntoView({ behavior: "smooth", block: "center" });
     } catch {
       setFormError("حدث خطأ أثناء إرسال الطلب. يرجى المحاولة مرة أخرى.");
