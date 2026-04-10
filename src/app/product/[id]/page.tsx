@@ -366,21 +366,46 @@ export default function ProductPage() {
               <div className="mb-6 lg:mb-0">
                 {/* Main image */}
                 <div className="relative aspect-[4/5] sm:aspect-[4/3] lg:aspect-[4/5] rounded-3xl overflow-hidden bg-white shadow-xl ring-1 ring-slate-100 group">
-                  <Image
-                    src={activeImage || "/placeholder.jpg"}
-                    alt={product.title}
-                    fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
-                    priority
-                  />
+                  <div 
+                    className="flex w-full h-full overflow-x-auto snap-x snap-mandatory scrollbar-hide scroll-smooth"
+                    onScroll={(e) => {
+                      const container = e.currentTarget;
+                      const scrollPos = Math.abs(container.scrollLeft);
+                      const width = container.clientWidth;
+                      if (width > 0) {
+                        const newIndex = Math.round(scrollPos / width);
+                        if (galleryImages[newIndex] && galleryImages[newIndex] !== activeImage) {
+                          setActiveImage(galleryImages[newIndex]);
+                        }
+                      }
+                    }}
+                  >
+                    {galleryImages.length > 0 ? (
+                      galleryImages.map((img, idx) => (
+                        <div key={img} id={`gallery-img-${idx}`} className="w-full h-full shrink-0 snap-center relative">
+                          <Image
+                            src={img}
+                            alt={`${product.title} - ${idx}`}
+                            fill
+                            className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                            priority={idx === 0}
+                          />
+                        </div>
+                      ))
+                    ) : (
+                      <div className="w-full h-full shrink-0 snap-center relative">
+                        <Image src="/placeholder.jpg" alt={product.title} fill className="object-cover" />
+                      </div>
+                    )}
+                  </div>
                   {/* Discount badge */}
                   {discount && (
-                    <div className="absolute top-4 right-4 bg-red-500 text-white font-black px-3 py-1.5 rounded-xl text-sm shadow-lg -rotate-2">
+                    <div className="absolute top-4 right-4 z-10 bg-red-500 text-white font-black px-3 py-1.5 rounded-xl text-sm shadow-lg -rotate-2 pointer-events-none">
                       -{discount}% تخفيض
                     </div>
                   )}
                   {/* Gradient bottom */}
-                  <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/30 to-transparent" />
+                  <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
                 </div>
 
                 {/* Thumbnail strip */}
@@ -389,7 +414,10 @@ export default function ProductPage() {
                     {galleryImages.map((img, idx) => (
                       <button
                         key={idx}
-                        onClick={() => setActiveImage(img)}
+                        onClick={() => {
+                          setActiveImage(img);
+                          document.getElementById(`gallery-img-${idx}`)?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+                        }}
                         className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden shrink-0 border-2 transition-all duration-200 ${
                           activeImage === img
                             ? "border-[#1A237E] shadow-md"
