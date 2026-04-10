@@ -269,7 +269,7 @@ function LeadsView() {
     setLoading(true);
     const { data } = await supabase
       .from("leads")
-      .select("id, full_name, phone, city, address, quantity, order_status, created_at, products(title)")
+      .select("id, full_name, phone, city, quantity, order_status, created_at, products(title)")
       .order("created_at", { ascending: false });
     setLeads((data as unknown as Lead[]) ?? []);
     setLoading(false);
