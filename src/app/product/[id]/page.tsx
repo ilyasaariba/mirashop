@@ -15,7 +15,6 @@ import {
   ChevronLeft,
   Package,
   BadgeCheck,
-  Phone,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
@@ -407,16 +406,7 @@ export default function ProductPage() {
                 {/* Trust strip */}
                 <TrustStrip />
 
-                {/* Mobile CTA (below details, above form) */}
-                <button
-                  onClick={scrollToForm}
-                  className="mt-6 w-full bg-[#FF6D00] hover:bg-[#E65100] text-white font-black text-xl py-5 rounded-2xl
-                    transition-all shadow-xl shadow-orange-300/50 flex items-center justify-center gap-3
-                    hover:scale-[1.02] lg:hidden"
-                >
-                  <ShoppingCart className="w-6 h-6" />
-                  اطلب الآن — الدفع عند الاستلام
-                </button>
+
               </div>
             </div>
 
@@ -471,8 +461,8 @@ export default function ProductPage() {
               transition-all shadow-lg shadow-orange-300/50 flex items-center justify-center gap-2 text-lg
               active:scale-95"
           >
-            <Phone className="w-5 h-5" />
-            اطلب الآن — مجاناً
+            <ShoppingCart className="w-5 h-5" />
+            اطلب الآن — الدفع عند الاستلام
           </button>
         </div>
         <p className="text-center text-[10px] text-slate-400 mt-1.5 font-medium">

@@ -126,8 +126,8 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
    ============================================================ */
 .whatsapp-fab {
   position: fixed;
-  bottom: 1.5rem;
-  right: 1.5rem;
+  bottom: 5.5rem; /* sits above the mobile bottom sticky bar */
+  right: 1rem;
   z-index: 9999;
   display: flex;
   align-items: center;
@@ -139,6 +139,14 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
   box-shadow: 0 4px 20px rgba(37, 211, 102, 0.5);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   text-decoration: none;
+}
+
+/* On desktop there's no bottom bar, so drop it back down */
+@media (min-width: 1024px) {
+  .whatsapp-fab {
+    bottom: 1.5rem;
+    right: 1.5rem;
+  }
 }
 
 .whatsapp-fab:hover {
