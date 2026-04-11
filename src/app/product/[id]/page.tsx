@@ -228,9 +228,8 @@ export default function ProductPage() {
       if (error) throw error;
       setIsSubmitted(true);
 
-      // TikTok Pixel Tracking
-      if (typeof window !== "undefined" && (window as any).ttq) {
-        // Hash phone number securely using Web Crypto API for TikTok matching
+      // TikTok Pixel Tracking (Client + Server Side)
+      if (typeof window !== "undefined") {
         const hashPhone = async (phoneStr: string) => {
           const msgUint8 = new TextEncoder().encode(phoneStr);
           const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8);
@@ -238,25 +237,38 @@ export default function ProductPage() {
           return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
         };
 
+        // Unique Event ID to prevent double-counting when both tags fire
+        const eventId = "evt_" + Math.random().toString(36).substring(2, 12);
+        
         hashPhone(phone).then((hashedPhone) => {
-          (window as any).ttq.identify({
-            phone_number: hashedPhone,
-          });
-
-          const trackingData = {
-            contents: [
-              {
+          // 1) Browser Pixel (Client Side)
+          if ((window as any).ttq) {
+            (window as any).ttq.identify({ phone_number: hashedPhone });
+            (window as any).ttq.track("Purchase", {
+              contents: [{
                 content_id: product.id,
                 content_type: "product",
                 content_name: product.title,
                 price: product.price,
-              },
-            ],
-            value: product.price * quantity,
-            currency: "MAD",
-          };
+              }],
+              value: product.price * quantity,
+              currency: "MAD",
+            }, { event_id: eventId });
+          }
 
-          (window as any).ttq.track("Purchase", trackingData);
+          // 2) Events API (Server Side Tunnel)
+          fetch("/api/tiktok", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              event: "Purchase",
+              event_id: eventId,
+              url: window.location.href,
+              hashed_phone: hashedPhone,
+              product,
+              quantity
+            })
+          }).catch(console.error);
         });
       }
 
