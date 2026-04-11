@@ -169,6 +169,23 @@ export default function ProductPage() {
   const [formError, setFormError] = useState("");
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
+  const [hasInitiated, setHasInitiated] = useState(false);
+  const handleInitiateCheckout = useCallback(() => {
+    if (!hasInitiated && product && typeof window !== "undefined" && (window as any).ttq) {
+      setHasInitiated(true);
+      (window as any).ttq.track("InitiateCheckout", {
+        contents: [{
+          content_id: product.id,
+          content_type: 'product',
+          content_name: product.title,
+          price: product.price
+        }],
+        value: product.price,
+        currency: 'MAD'
+      });
+    }
+  }, [hasInitiated, product]);
+
   const mobileFormRef = useRef<HTMLDivElement>(null);
   const [isFormVisible, setIsFormVisible] = useState(false);
 
@@ -197,6 +214,20 @@ export default function ProductPage() {
         if (error) throw error;
         setProduct(data);
         setActiveImage(data?.image_url ?? "");
+
+        // Track ViewContent
+        if (typeof window !== "undefined" && (window as any).ttq) {
+          (window as any).ttq.track('ViewContent', {
+            contents: [{
+              content_id: data.id,
+              content_type: 'product',
+              content_name: data.title,
+              price: data.price
+            }],
+            value: data.price,
+            currency: 'MAD'
+          });
+        }
       } catch (e) {
         console.error(e);
       } finally {
@@ -282,7 +313,19 @@ export default function ProductPage() {
 
   const scrollToForm = useCallback(() => {
     document.getElementById("order-form")?.scrollIntoView({ behavior: "smooth" });
-  }, []);
+    if (product && typeof window !== 'undefined' && (window as any).ttq) {
+      (window as any).ttq.track('AddToCart', {
+        contents: [{
+          content_id: product.id,
+          content_type: 'product',
+          content_name: product.title,
+          price: product.price
+        }],
+        value: product.price,
+        currency: 'MAD'
+      });
+    }
+  }, [product]);
 
   /* Discount */
   const discount =
@@ -500,7 +543,7 @@ export default function ProductPage() {
             </div>
 
             {/* ── MOBILE ORDER FORM (below details) ── */}
-            <div id="order-form" ref={mobileFormRef} className="lg:hidden">
+            <div id="order-form" ref={mobileFormRef} className="lg:hidden" onFocusCapture={handleInitiateCheckout}>
               <OrderForm
                 product={product}
                 fullName={fullName} setFullName={setFullName}
@@ -517,7 +560,7 @@ export default function ProductPage() {
           </div>
 
           {/* ── RIGHT BLOCK: Sticky Order Form (Desktop only) ── */}
-          <div className="hidden lg:block">
+          <div className="hidden lg:block" onFocusCapture={handleInitiateCheckout}>
             <div id="order-form" className="sticky top-20">
               <OrderForm
                 product={product}
